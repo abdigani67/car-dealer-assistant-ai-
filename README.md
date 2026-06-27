@@ -33,13 +33,14 @@ No service-role key is used or required. The `whatsapp_token` column is read
 
 ## Database setup
 
-Run the migration in `supabase/migrations/0001_schema_additions.sql` against your
-project (Supabase SQL editor or `supabase db push`). It:
+Run the migration in `supabase/migrations/0001_init.sql` against your project
+(Supabase SQL editor or `supabase db push`). It:
 
-1. Adds `leads.ai_active`, `leads.interested_stock_id`, `stock.archived_at`,
-   `dealers.opening_hours`.
+1. Creates the `dealers`, `stock`, `leads` and `conversations` tables (including
+   `leads.ai_active`, `leads.interested_stock_id`, `stock.archived_at`,
+   `dealers.opening_hours`).
 2. Enables Row Level Security and adds policies so each dealer can only read and
-   write their own rows.
+   write their own rows (`auth.uid() = dealer_id`).
 3. Adds `leads` and `conversations` to the realtime publication.
 
 ### Auth model
