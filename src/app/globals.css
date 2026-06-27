@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-ink-950 text-white antialiased;
+    background-image: var(--tw-gradient, none);
+  }
+
+  /* Custom scrollbars to match the dark theme */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+  .app-bg {
+    background-color: #0a0918;
+    background-image: radial-gradient(
+        1200px 600px at 8% -10%,
+        rgba(91, 79, 232, 0.16),
+        transparent 60%
+      ),
+      radial-gradient(
+        900px 500px at 108% 8%,
+        rgba(0, 196, 180, 0.1),
+        transparent 55%
+      );
+  }
+}
