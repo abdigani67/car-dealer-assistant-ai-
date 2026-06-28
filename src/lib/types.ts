@@ -43,6 +43,7 @@ export interface Stock {
   description: string | null;
   available: boolean;
   archived_at: string | null;
+  listing_url: string | null;
   created_at: string;
 }
 
