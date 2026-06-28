@@ -19,6 +19,7 @@ type FormState = {
   fuel_type: string;
   transmission: string;
   description: string;
+  listing_url: string;
 };
 
 const empty: FormState = {
@@ -31,6 +32,7 @@ const empty: FormState = {
   fuel_type: "",
   transmission: "",
   description: "",
+  listing_url: "",
 };
 
 function toForm(car: Stock): FormState {
@@ -44,6 +46,7 @@ function toForm(car: Stock): FormState {
     fuel_type: car.fuel_type ?? "",
     transmission: car.transmission ?? "",
     description: car.description ?? "",
+    listing_url: car.listing_url ?? "",
   };
 }
 
@@ -90,6 +93,7 @@ export function CarModal({
       fuel_type: form.fuel_type || null,
       transmission: form.transmission || null,
       description: form.description.trim() || null,
+      listing_url: form.listing_url.trim() || null,
     };
 
     const res = car
@@ -168,6 +172,16 @@ export function CarModal({
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
             placeholder="Full service history, one owner, MOT until…"
+          />
+        </div>
+        <div className="col-span-2">
+          <Label htmlFor="listing_url">Autotrader / Listing URL (optional)</Label>
+          <Input
+            id="listing_url"
+            type="url"
+            value={form.listing_url}
+            onChange={(e) => set("listing_url", e.target.value)}
+            placeholder="https://www.autotrader.co.uk/..."
           />
         </div>
       </div>

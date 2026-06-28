@@ -81,27 +81,62 @@ export function ConversationDrawer({
     })();
 
     (async () => {
-      const { data } = await supabase
+      // Only ever suggest cars that are available and not archived/sold.
+      const { data: available } = await supabase
         .from("stock")
         .select("*")
         .eq("dealer_id", lead.dealer_id)
         .eq("available", true)
         .is("archived_at", null)
         .order("created_at", { ascending: false })
-        .limit(40);
-      if (cancelled || !data) return;
-      const ceiling = budgetCeiling(lead.budget);
-      const ranked = [...data].sort((a, b) => {
-        if (a.id === lead.interested_stock_id) return -1;
-        if (b.id === lead.interested_stock_id) return 1;
-        if (ceiling) {
-          const aFit = (a.price ?? Infinity) <= ceiling * 1.1 ? 0 : 1;
-          const bFit = (b.price ?? Infinity) <= ceiling * 1.1 ? 0 : 1;
-          if (aFit !== bFit) return aFit - bFit;
+        .limit(200);
+      if (cancelled) return;
+
+      // Pool of candidates, excluding the car the lead is already looking at.
+      let pool = (available ?? []).filter(
+        (s) => s.id !== lead.interested_stock_id,
+      );
+
+      // Reference price: the interested car's price, else a parseable budget.
+      let refPrice: number | null = null;
+      if (lead.interested_stock_id) {
+        const inPool = (available ?? []).find(
+          (s) => s.id === lead.interested_stock_id,
+        );
+        if (inPool?.price != null) {
+          refPrice = inPool.price;
+        } else {
+          // Interested car may itself be sold/archived — fetch its price anyway.
+          const { data: interested } = await supabase
+            .from("stock")
+            .select("price")
+            .eq("id", lead.interested_stock_id)
+            .maybeSingle();
+          if (cancelled) return;
+          refPrice = interested?.price ?? null;
         }
-        return 0;
-      });
-      setMatches(ranked.slice(0, 4));
+      } else {
+        refPrice = budgetCeiling(lead.budget);
+      }
+
+      let result: Stock[];
+      if (refPrice != null) {
+        const ref = refPrice;
+        const priced = pool
+          .filter((s) => s.price != null)
+          .map((s) => ({ s, diff: Math.abs((s.price as number) - ref) }))
+          .sort((a, b) => a.diff - b.diff);
+        const inBand = priced.filter((p) => p.diff <= 4000);
+        // Closest matches first; top up past the ±£4k band to reach 4 if needed.
+        const base = (inBand.length >= 4 ? inBand : priced).map((p) => p.s);
+        const unpriced = pool.filter((s) => s.price == null);
+        result = [...base, ...unpriced].slice(0, 4);
+      } else {
+        // No reference price — fall back to the most recently added cars.
+        result = pool.slice(0, 4);
+      }
+
+      setMatches(result);
     })();
 
     return () => {
